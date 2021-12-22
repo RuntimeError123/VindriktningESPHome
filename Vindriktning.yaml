@@ -1,0 +1,68 @@
+esphome:
+  name: vindriktning
+  project:
+    name: RuntimeError.VindriktningESPHome
+    version: "${vindriktning_esphome_version}"
+
+substitutions:
+    vindriktning_esphome_version: "20211222"
+
+esp8266:
+    board: d1_mini
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: ""
+
+ota:
+  password: ""
+
+wifi:
+  ssid: !secret wifissid
+  password: !secret wifipassword
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Vindriktning ESPHome"
+
+captive_portal:
+
+web_server:
+  port: 80
+
+uart:
+  tx_pin: D0
+  rx_pin: D2
+  baud_rate: 9600
+
+sensor:
+  - platform: wifi_signal
+    id: vindriktning_wifi_signal
+    name: "Vindriktning ESPHome WiFi Signal"
+    update_interval: 60s
+  - platform: uptime
+    id: vindriktning_uptime
+    name: Uptime
+  - platform: pm1006
+    id: vindriktning_PM2_5
+    pm_2_5:
+      name: "PM 2.5 concentration"
+    update_interval: 20s
+
+text_sensor:
+  - platform: template
+    id: vindriktning_version
+    name: "Vindriktning ESPHome Version"
+    update_interval: 1d
+    lambda: |-
+      return {"${vindriktning_esphome_version}"};
+  - platform: version
+    id: vindriktning_esphome_version
+    name: "ESPHome Version"
+
+button:
+  - platform: restart
+    name: "Vindriktning Restart"
