@@ -2,10 +2,13 @@ esphome:
   name: vindriktning
   project:
     name: RuntimeError.VindriktningESPHome
-    version: "${vindriktning_esphome_version}"
-
-substitutions:
-    vindriktning_esphome_version: "20211222"
+    version: 1.0.0
+  on_boot:
+    priority: 800
+    then: 
+      - text_sensor.template.publish:
+          id: led_color
+          state: "Green"
 
 esp8266:
     board: d1_mini
@@ -15,10 +18,10 @@ logger:
 
 # Enable Home Assistant API
 api:
-  password: ""
+  password: !secret apipassword
 
 ota:
-  password: ""
+  password: !secret otapassword
 
 wifi:
   ssid: !secret wifissid
@@ -39,7 +42,7 @@ uart:
   baud_rate: 9600
 
 time:
-  - platform: sntp
+  - platform: homeassistant
     id: time_utc
     timezone: "Etc/UTC"
     on_time_sync:
@@ -50,17 +53,36 @@ sensor:
     id: vindriktning_wifi_signal
     name: "Vindriktning ESPHome WiFi Signal"
     update_interval: 60s
+    disabled_by_default: true
   - platform: pm1006
     id: vindriktning_PM2_5
     pm_2_5:
       name: "PM 2.5 concentration"
-    update_interval: 20s
+      on_value_range:
+      - below: 36
+        then:
+          - text_sensor.template.publish:
+              id: led_color
+              state: "Green"
+      - above: 35
+        below: 86
+        then:
+          - text_sensor.template.publish:
+              id: led_color
+              state: "Yellow"
+      - above: 85
+        then:
+          - text_sensor.template.publish:
+              id: led_color
+              state: "Red"
+
   - platform: template
     id: vindriktning_startup_time
     name: "Startup time"
     device_class: "timestamp"
     accuracy_decimals: 0
     update_interval: never
+    disabled_by_default: true
     lambda: |-
       static float timestamp = (
         id(time_utc).utcnow().timestamp
@@ -69,12 +91,15 @@ sensor:
 
 text_sensor:
   - platform: template
-    id: vindriktning_version
+    id: led_color
+    name: "LED color"
+    update_interval: never
+    disabled_by_default: true
+  - platform: version
     name: "Vindriktning Version"
-    update_interval: 1d
-    lambda: |-
-      return {"${vindriktning_esphome_version}"};
+    disabled_by_default: true
 
 button:
   - platform: restart
     name: "Vindriktning Restart"
+    disabled_by_default: true
