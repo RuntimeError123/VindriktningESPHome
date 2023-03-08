@@ -26,10 +26,9 @@ ota:
 wifi:
   ssid: !secret wifissid
   password: !secret wifipassword
-
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Vindriktning ESPHome"
+    ssid: "Vindriktning"
 
 captive_portal:
 
@@ -50,8 +49,7 @@ time:
 
 sensor:
   - platform: wifi_signal
-    id: vindriktning_wifi_signal
-    name: "Vindriktning ESPHome WiFi Signal"
+    name: "WiFi Signal"
     update_interval: 60s
     disabled_by_default: true
   - platform: pm1006
@@ -75,7 +73,6 @@ sensor:
           - text_sensor.template.publish:
               id: led_color
               state: "Red"
-
   - platform: template
     id: vindriktning_startup_time
     name: "Startup time"
@@ -96,10 +93,16 @@ text_sensor:
     update_interval: never
     disabled_by_default: true
   - platform: version
-    name: "Vindriktning Version"
+    name: "Version"
+    disabled_by_default: true
+
+binary_sensor:
+  - platform: status
+    name: "Vindriktning Connection status"
+    device_class: connectivity
     disabled_by_default: true
 
 button:
   - platform: restart
-    name: "Vindriktning Restart"
+    name: "Restart"
     disabled_by_default: true
